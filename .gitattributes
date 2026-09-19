@@ -1,0 +1,31 @@
+# Normalise all text to LF in the repository. Git checks out native line
+# endings where a rule below says so; everything else is LF everywhere.
+* text=auto eol=lf
+
+# PowerShell is happiest with CRLF on disk, and some older hosts require it.
+*.ps1   text eol=crlf
+*.psm1  text eol=crlf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+
+# Explicitly binary — never transform, never diff as text.
+*.pbf     binary
+*.glb     binary
+*.gltf    binary
+*.png     binary
+*.jpg     binary
+*.webp    binary
+*.ico     binary
+*.ttf     binary
+*.woff    binary
+*.woff2   binary
+*.zip     binary
+*.parquet binary
+*.gpkg    binary
+*.shp     binary
+*.dbf     binary
+*.shx     binary
+
+# Lockfiles: treat as generated so they don't pollute PR diffs on GitHub.
+uv.lock      linguist-generated=true
+package-lock.json linguist-generated=true

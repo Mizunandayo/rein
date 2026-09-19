@@ -1,0 +1,61 @@
+# SECRETS
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials
+.aws/
+secrets.json
+*.secret
+
+
+# PRIVATE SPECIFICATION
+Rein_Blueprint.md
+Rein_Blueprint*.md
+*_Blueprint.md
+
+
+# DATA 
+data/raw/*
+data/interim/*
+data/processed/*
+!data/**/.gitkeep
+!data/provenance/**
+*.osm.pdf
+*.osm.xml
+
+
+# PYTHON
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+
+#  Node / web
+node_modules/
+web/dist/
+.vite/
+
+#  Editors / OS
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+#  Notebooks — outputs can embed data and keys
+notebooks/**/*.ipynb
