@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: this workflow only reads code. Any job needing more
+# declares it locally. The default GITHUB_TOKEN is otherwise far too broad.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Never let a real key reach CI. Tests must not require network secrets.
+  REIN_ENV: ci
+  REIN_LOG_FORMAT: json
+
+jobs:
+  quality:
+    name: lint · types · tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false   # don't leave a token in .git/config
+
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
+        with:
+          enable-cache: true
+
+      - name: Install (locked)
+        # --frozen fails if uv.lock disagrees with pyproject.toml, so a
+        # dependency can never drift in unreviewed.
+        run: uv sync --all-extras --group dev --frozen
+
+      - name: Lint
+        run: uv run ruff check --output-format=github .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Types
+        run: uv run mypy
+
+      - name: Tests
+        # Network-marked tests are excluded: CI must be hermetic and must not
+        # consume third-party API quota on every push.
+        run: uv run pytest -m "not network"
+
+  supply-chain:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras --group dev --frozen
+      - name: Known vulnerabilities
+        run: uv run pip-audit --strict --progress-spinner off
+
+  secrets:
+    name: secret scan (full history)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0             # gitleaks needs history, not just HEAD
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  blueprint-guard:
+    name: private blueprint absent from history
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Assert no blueprint in any commit
+        run: |
+          if git log --all --name-only --pretty=format: | sort -u | grep -iE '(^|/)[^/]*_blueprint[^/]*\.md$'; then
+            echo "::error::Private specification found in git history."
+            exit 1
+          fi
+          echo "Clean — no blueprint in history."
