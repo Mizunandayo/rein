@@ -10,10 +10,10 @@
   gitleaks/gitleaks-action, which is why that check exists below).
 #>
 $actions = @(
-  'actions/checkout@v5',
-  'astral-sh/setup-uv@v5',
-  'github/codeql-action@v3',
-  'gitleaks/gitleaks-action@v2'
+  'actions/checkout@v7.0.1',
+  'astral-sh/setup-uv@v10.2.0',
+  'github/codeql-action@v4.38.2',
+  'gitleaks/gitleaks-action@v3.0.0'
 )
 foreach ($a in $actions) {
   $repo, $ref = $a -split '@'
