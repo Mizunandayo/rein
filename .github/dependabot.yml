@@ -11,6 +11,11 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule: { interval: "weekly", day: "monday" }
+    groups:
+      # CodeQL's init and analyze steps must always be on the same version:
+      # CodeQL refuses to run when they differ. One PR moves both.
+      codeql:
+        patterns: ["github/codeql-action*"]
 
   - package-ecosystem: "npm"
     directory: "/web"

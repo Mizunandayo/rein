@@ -21,6 +21,9 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
         args: ["--fix=lf"]
+        # .gitattributes checks PowerShell and batch files out with CRLF.
+        # Forcing them to LF here fails every fresh clone.
+        exclude: '\.(ps1|psm1|cmd|bat)$'
       - id: detect-private-key
       - id: no-commit-to-branch
         args: ["--branch", "main"]
