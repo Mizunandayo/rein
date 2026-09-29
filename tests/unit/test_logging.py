@@ -6,6 +6,7 @@ test is only a hope, so each leak path it claims to close is exercised here.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterator
 
 import pytest
@@ -73,3 +74,13 @@ def test_level_filter_drops_lower_levels(capsys: pytest.CaptureFixture[str]) -> 
     get_logger("test").info("should_not_appear")
 
     assert "should_not_appear" not in capsys.readouterr().out
+
+
+def test_http_client_request_urls_are_not_logged(caplog: pytest.LogCaptureFixture) -> None:
+    """The httpx library logs each request URL at INFO; a URL can carry a key."""
+    caplog.set_level(logging.INFO)
+    configure_logging("INFO", "json")
+
+    logging.getLogger("httpx").info("HTTP Request: GET https://x.test/root.json?key=AIzaLEAK")
+
+    assert "AIzaLEAK" not in caplog.text

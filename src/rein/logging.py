@@ -64,6 +64,10 @@ def configure_logging(level: str = "INFO", fmt: str = "console") -> None:
     )
 
     logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level)
+    # httpx and httpcore log every request URL at INFO, and a URL can carry an
+    # API key as a query parameter. Their logs stay at WARNING and above.
+    for library in ("httpx", "httpcore"):
+        logging.getLogger(library).setLevel(logging.WARNING)
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.make_filtering_bound_logger(logging.getLevelNamesMapping()[level]),
