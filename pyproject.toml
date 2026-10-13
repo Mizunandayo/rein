@@ -22,7 +22,7 @@ classifiers = [
 
 # Runtime dependencies. Lower bounds only — uv.lock pins the exact build.
 dependencies = [
-  "numpy>=2.1",
+  "numpy>=2.5.4",
   "scipy>=1.14",
   "pandas>=2.2",
   "shapely>=2.0",
